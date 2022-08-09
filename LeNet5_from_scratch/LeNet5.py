@@ -1,14 +1,25 @@
+import os
 # Load in relevant libraries, and alias where appropriate
 import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
+# Pytorch profiler
+from torch.profiler import profile, record_function, ProfilerActivity
+
 # Define relevant variables for the ML task
 batch_size = 64
 num_classes = 10
 learning_rate = 0.001
 num_epochs = 10
+
+model_file = 'LeNet5_model.pth'
+
+prof_activity = {
+    'cpu'   : ProfilerActivity.CPU,
+    'cuda'  : ProfilerActivity.CUDA
+}
 
 # Device will determine whether to run the training on GPU or CPU.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -75,35 +86,53 @@ class ConvNeuralNet(nn.Module):
         out = self.fc2(out)
         return out
 
+print(f"Using processing element: {device}")
+
+
+def train(model):
+    #Setting the loss function
+    cost = nn.CrossEntropyLoss()
+
+    #Setting the optimizer with the model parameters and learning rate
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+    #this is defined to print how many steps are remaining when training
+    total_step = len(train_loader)
+
+    # Train the model
+    with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof:
+            with record_function("model_train"):
+                for epoch in range(num_epochs):
+                    for i, (images, labels) in enumerate(train_loader):
+                        images = images.to(device)
+                        labels = labels.to(device)
+
+                        #Forward pass
+                        outputs = model(images)
+                        loss = cost(outputs, labels)
+
+                        # Backward and optimize
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+
+                    if (i+1) % 400 == 0:
+                        print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+    return model
+
+
 model = ConvNeuralNet(num_classes).to(device)
-
-#Setting the loss function
-cost = nn.CrossEntropyLoss()
-
-#Setting the optimizer with the model parameters and learning rate
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
-#this is defined to print how many steps are remaining when training
-total_step = len(train_loader)
-
-# Train the model
-for epoch in range(num_epochs):
-    for i, (images, labels) in enumerate(train_loader):  
-        images = images.to(device)
-        labels = labels.to(device)
-        
-        #Forward pass
-        outputs = model(images)
-        loss = cost(outputs, labels)
-        	
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        		
-        if (i+1) % 400 == 0:
-            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
-        		           .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+if os.path.exists(model_file):
+    print(f"Loading model parameters from {model_file}")
+    model.load_state_dict(torch.load(model_file))
+else:
+    print(f"Training model....")
+    # Define model and train it
+    model = train(model)
+    print(f"Saving model to {model_file}")
+    torch.save(model.state_dict(), model_file)
 
 # Test the model
 # In test phase, we don't need to compute gradients (for memory efficiency)
