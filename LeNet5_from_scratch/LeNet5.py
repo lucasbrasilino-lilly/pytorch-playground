@@ -23,6 +23,7 @@ prof_activity = {
 
 # Device will determine whether to run the training on GPU or CPU.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#device = torch.device('cpu')
 
 #Loading the dataset and preprocessing
 
@@ -86,10 +87,7 @@ class ConvNeuralNet(nn.Module):
         out = self.fc2(out)
         return out
 
-print(f"Using processing element: {device}")
-
-
-def train(model):
+def train(model,device=torch.device('cpu')):
     #Setting the loss function
     cost = nn.CrossEntropyLoss()
 
@@ -99,8 +97,10 @@ def train(model):
     #this is defined to print how many steps are remaining when training
     total_step = len(train_loader)
 
+    prof_sort_by = [ f"self_{device.type}_time_total", f"{device.type}_time_total" ]
+
     # Train the model
-    with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof:
+    with profile(activities=[prof_activity[device.type]], record_shapes=True) as prof:
             with record_function("model_train"):
                 for epoch in range(num_epochs):
                     for i, (images, labels) in enumerate(train_loader):
@@ -116,35 +116,39 @@ def train(model):
                         loss.backward()
                         optimizer.step()
 
-                    if (i+1) % 400 == 0:
-                        print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
-                                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
-    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+                    #if (i+1) % 400 == 0:
+                    #    print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                    #           .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+
+    for _sort_by in prof_sort_by:
+        print(prof.key_averages().table(sort_by=_sort_by, row_limit=12))
     return model
 
 
 model = ConvNeuralNet(num_classes).to(device)
-if os.path.exists(model_file):
+if False: #os.path.exists(model_file):
     print(f"Loading model parameters from {model_file}")
     model.load_state_dict(torch.load(model_file))
 else:
     print(f"Training model....")
     # Define model and train it
-    model = train(model)
+    model = train(model,device)
     print(f"Saving model to {model_file}")
     torch.save(model.state_dict(), model_file)
 
+print(f"Training finished!")
+
 # Test the model
 # In test phase, we don't need to compute gradients (for memory efficiency)
-with torch.no_grad():
-    correct = 0
-    total = 0
-    for images, labels in test_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-        outputs = model(images)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+#with torch.no_grad():
+#    correct = 0
+#    total = 0
+#    for images, labels in test_loader:
+#        images = images.to(device)
+#        labels = labels.to(device)
+#        outputs = model(images)
+#        _, predicted = torch.max(outputs.data, 1)
+#        total += labels.size(0)
+#        correct += (predicted == labels).sum().item()
 
-    print('Accuracy of the network on the 10000 test images: {} %'.format(100 * correct / total))
+ #   print('Accuracy of the network on the 10000 test images: {} %'.format(100 * correct / total))
