@@ -34,8 +34,8 @@
 # In[ ]:
 
 
-from IPython.display import YouTubeVideo,HTML
-YouTubeVideo("IAQp2Zuqevc", width=700, height=500)
+#from IPython.display import YouTubeVideo,HTML
+#YouTubeVideo("IAQp2Zuqevc", width=700, height=500)
 
 
 # <a id='Data_loading_structure'></a>
@@ -74,7 +74,7 @@ import os
 # This dataset is well structured for most deep learning frameworks. It is organized into train, val, and test folders, which contains subfolders of the classes of pneumonia (normal, pneumonia), each containing the respective jpeg images.
 
 
-data_dir = './chest_xray/chest_xray'
+data_dir = '/work/l029235/chest_xray/chest_xray'
 
 print(os.listdir(data_dir))
 classes = os.listdir(data_dir + "/train")
@@ -147,8 +147,8 @@ train_samplesize = pd.DataFrame.from_dict(
                         for filename in os.listdir(data_dir+'/train/PNEUMONIA')])]})
 
 
-sns.barplot(data=train_samplesize).set_title('Training Set Data Inbalance', fontsize=20)
-plt.show()
+#sns.barplot(data=train_samplesize).set_title('Training Set Data Inbalance', fontsize=20)
+#plt.show()
 
 
 # There appears to be **data class imbalance** in our dataset, with pnuemonia images having more samples compared to normal images. This is an issue as it will become harder for the model to generalize well as the model might get overfitted to a dominant class during training and thus perform badly when it sees a new dataset. I will try to compensate for this by weighting the loss of each class/label. This means that for the normal images, they will be given a higher weighting when evaluating the loss, and pneumonia images will be given a lower weighting.
@@ -163,7 +163,7 @@ def show_example(img, label):
     print('Label: ', dataset.classes[label], "("+str(label)+")")
     plt.imshow(img.permute(1, 2, 0))
     
-show_example(*dataset[4])
+#show_example(*dataset[4])
 
 
 # Next, I plot out some images according to their labels, from the directory (not from the transformed dataset) as it is easier to separate between the classes. 
@@ -190,9 +190,9 @@ rand_samples = random.sample([os.path.join(data_dir+'/train/NORMAL', filename)
     random.sample([os.path.join(data_dir+'/train/PNEUMONIA', filename) 
                    for filename in os.listdir(data_dir+'/train/PNEUMONIA')], 5)
 
-plot_samples(rand_samples)
-plt.suptitle('Training Set Samples', fontsize=30)
-plt.show()
+#plot_samples(rand_samples)
+#plt.suptitle('Training Set Samples', fontsize=30)
+#plt.show()
 
 
 # <a id='Preparing_data'></a>
@@ -237,7 +237,7 @@ def show_batch(dl):
         ax.imshow(make_grid(images[:60], nrow=10).permute(1, 2, 0))
         break
         
-show_batch(train_dl)
+#show_batch(train_dl)
 
 
 # <a id='GPU'></a>
@@ -666,8 +666,8 @@ test_samplesize = pd.DataFrame.from_dict(
      'Pneumonia': [len([os.path.join(data_dir+'/test/PNEUMONIA', filename) 
                         for filename in os.listdir(data_dir+'/test/PNEUMONIA')])]})
 
-sns.barplot(data=test_samplesize).set_title('Test Set Data Inbalance', fontsize=20)
-plt.show()
+#sns.barplot(data=test_samplesize).set_title('Test Set Data Inbalance', fontsize=20)
+#plt.show()
 
 
 # In[ ]:
@@ -730,7 +730,7 @@ plt.xticks(range(2), ['Normal', 'Pneumonia'], fontsize=16)
 plt.yticks(range(2), ['Normal', 'Pneumonia'], fontsize=16)
 plt.xlabel('Predicted Label',fontsize=18)
 plt.ylabel('True Label',fontsize=18)
-plt.show()
+#plt.show()
 
 
 # In[ ]:
@@ -769,7 +769,7 @@ fig, ax = plt.subplots(nrows=2, ncols=5, figsize=(30,14))
 
 for c,i in enumerate(idxs):
     img_tensor, label = test_dataset[i]
-    ax[c//5][c%5].imshow(img_tensor[0,:,:], cmap='gray')
+    #ax[c//5][c%5].imshow(img_tensor[0,:,:], cmap='gray')
     ax[c//5][c%5].set_title('Label: {}\nPrediction: {}'
                             .format(test_dataset.classes[label], 
                                     test_dataset.classes[preds[i]]),
