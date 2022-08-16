@@ -74,7 +74,8 @@ import os
 # This dataset is well structured for most deep learning frameworks. It is organized into train, val, and test folders, which contains subfolders of the classes of pneumonia (normal, pneumonia), each containing the respective jpeg images.
 
 
-data_dir = '/work/l029235/chest_xray/chest_xray'
+#data_dir = '/work/l029235/chest_xray/chest_xray'
+data_dir = './chest_xray/chest_xray'
 
 print(os.listdir(data_dir))
 classes = os.listdir(data_dir + "/train")
@@ -424,7 +425,7 @@ class PneumoniaResnet(PneumoniaModelBase):
     def __init__(self):
         super().__init__()
         # Use a pretrained model
-        self.network = models.resnet50(pretrained=True)
+        self.network = models.resnet50(pretrained=False)
         # Freeze training for all layers before classifier
         for param in self.network.fc.parameters():
             param.require_grad = False  
@@ -458,8 +459,6 @@ class PneumoniaResnet(PneumoniaModelBase):
 # * `model.eval()` set specific layers like dropout and batchnorm to evaluation mode (dropout won’t drop activations, batchnorm will use running estimates instead of batch statistics) while `model.train()` will enable them.
 # 
 # * `torch.no_grad()` impacts the autograd engine and deactivate it. It will reduce memory usage and speed up computations but we won’t be able to backprop (which we don’t want in an evaluation  phase).
-
-# In[ ]:
 
 
 @torch.no_grad()
@@ -549,8 +548,6 @@ def fit(epochs, lr, model, train_loader, val_loader, weight,
 
 # Before we train the model, we need to ensure that the data and the model's parameters (weights and biases) are on the same device (CPU or GPU). We can reuse the to_device function to move the model's parameters to the right device. This is important and is a step that is usually forgotten and will cause error.
 
-# In[ ]:
-
 
 train_dl = DeviceDataLoader(train_dl, device)
 val_dl = DeviceDataLoader(val_dl, device)
@@ -562,9 +559,6 @@ model = to_device(PneumoniaResnet(), device)
 # 
 # Configurations like `batch size`, `learning rate` etc. need to picked in advance while training machine learning models, and are called **hyperparameters**. Picking the right hyperparameters is critical for training an accurate model within a reasonable amount of time, and is an active area of research and experimentation. Feel free to try different learning rates and see how it affects the training process.
 
-# In[ ]:
-
-
 epochs = 20
 lr = 0.0001
 grad_clip = None
@@ -574,22 +568,13 @@ opt_func = torch.optim.Adam
 weight = torch.FloatTensor([3876/(1342+3876), 1342/(1342+3876)]).to(device)
 
 
-# In[ ]:
-
-
 history, optimizer, best_loss = fit(epochs, lr, model, train_dl, val_dl, weight, 
                                     grad_clip=grad_clip, 
                                     weight_decay=weight_decay, 
                                     opt_func=opt_func)
 
 
-# In[ ]:
-
-
 print('Best loss is:', best_loss)
-
-
-# In[ ]:
 
 
 # Save Model
