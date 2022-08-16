@@ -12,7 +12,7 @@ from torch.profiler import profile, record_function, ProfilerActivity
 batch_size = 64
 num_classes = 10
 learning_rate = 0.001
-num_epochs = 10
+num_epochs = 1
 
 model_file = 'LeNet5_model.pth'
 
@@ -101,27 +101,28 @@ def train(model,device=torch.device('cpu')):
 
     # Train the model
     with profile(activities=[prof_activity[device.type]], record_shapes=True) as prof:
-            with record_function("model_train"):
-                for epoch in range(num_epochs):
-                    for i, (images, labels) in enumerate(train_loader):
-                        images = images.to(device)
-                        labels = labels.to(device)
+            for epoch in range(num_epochs):
+                for i, (images, labels) in enumerate(train_loader):
+                    images = images.to(device)
+                    labels = labels.to(device)
 
-                        #Forward pass
+                    #Forward pass
+                    with record_function("model_train_forward"):
                         outputs = model(images)
+                    with record_function("model_train_loss_func"):
                         loss = cost(outputs, labels)
 
-                        # Backward and optimize
-                        optimizer.zero_grad()
-                        loss.backward()
-                        optimizer.step()
+                    # Backward and optimize
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
                     #if (i+1) % 400 == 0:
                     #    print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
                     #           .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
 
     for _sort_by in prof_sort_by:
-        print(prof.key_averages().table(sort_by=_sort_by, row_limit=12))
+        print(prof.key_averages().table(sort_by=_sort_by, row_limit=50))
     return model
 
 
