@@ -3,10 +3,10 @@ from torch.cuda.nvtx import range_push,range_pop
 
 class TinyModel(torch.nn.Module):
 
-    def __init__(self):
+    def __init__(self, input_size):
         super(TinyModel, self).__init__()
 
-        self.linear1 = torch.nn.Linear(100, 200)
+        self.linear1 = torch.nn.Linear(input_size, 200)
         self.activation = torch.nn.ReLU()
         self.linear2 = torch.nn.Linear(200, 10)
         self.softmax = torch.nn.Softmax(dim=0)
@@ -26,12 +26,12 @@ class TinyModel(torch.nn.Module):
         range_pop()
         return x
 
-def main(sample_size = 10*2**10):
-    tinymodel = TinyModel()
+def main(input_size = 10*2**10):
+    tinymodel = TinyModel(input_size)
     print('The model:')
     print(tinymodel)
 
-    trainset = torch.rand(10, sample_size)
+    trainset = torch.rand(10, input_size)
     target = torch.rand(10)
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(tinymodel.parameters(), lr=0.05)
