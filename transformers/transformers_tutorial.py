@@ -17,6 +17,18 @@ from torchtext.vocab import build_vocab_from_iterator
 import copy
 import time
 
+# Check that MPS is available
+if not torch.backends.mps.is_available():
+    if not torch.backends.mps.is_built():
+        print("MPS not available because the current PyTorch install was not "
+              "built with MPS enabled.")
+    else:
+        print("MPS not available because the current MacOS version is not 12.3+ "
+              "and/or you do not have an MPS-enabled device on this machine.")
+
+else:
+    mps_device = torch.device("mps")
+
 class TransformerModel(nn.Module):
 
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
@@ -98,7 +110,16 @@ train_data = data_process(train_iter)
 val_data = data_process(val_iter)
 test_data = data_process(test_iter)
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# Check that MPS is available
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
+
+print(f"***** Using device {device}")
 
 def batchify(data: Tensor, bsz: int) -> Tensor:
     """Divides the data into bsz separate sequences, removing extra elements
