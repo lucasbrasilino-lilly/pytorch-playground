@@ -22,6 +22,7 @@ class SimpleModel(torch.nn.Module):
         x = self.linear2(x)
         range_pop()
         range_push("Softmax")
+        x = self.softmax(x)
         range_pop()
         return x
 
