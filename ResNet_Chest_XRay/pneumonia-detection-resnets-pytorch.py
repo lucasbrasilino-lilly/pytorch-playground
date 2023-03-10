@@ -74,8 +74,8 @@ import os
 # This dataset is well structured for most deep learning frameworks. It is organized into train, val, and test folders, which contains subfolders of the classes of pneumonia (normal, pneumonia), each containing the respective jpeg images.
 
 
-#data_dir = '/work/l029235/chest_xray/chest_xray'
-data_dir = './chest_xray/chest_xray'
+data_dir = '/work/l029235/chest_xray/chest_xray'
+#data_dir = './chest_xray/chest_xray'
 
 print(os.listdir(data_dir))
 classes = os.listdir(data_dir + "/train")
