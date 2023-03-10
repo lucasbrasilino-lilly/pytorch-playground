@@ -39,9 +39,13 @@ def main(input_size = 10*2**10):
 
     for i,sample in enumerate(trainset):
         range_push(f"MiniBatch {i}")
+        range_push(f"Forward")
         output = tinymodel(sample)
+        range_pop()
+        range_push(f"Conmpute Loss")
         loss = criterion(output,target)
-        print(f'Loss = {loss}')
+        range_pop()
+        #print(f'Loss = {loss}')
         optimizer.zero_grad()
         range_push("Backpropagation")
         loss.backward()
