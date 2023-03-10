@@ -1,3 +1,3 @@
-# Pytorch Playground
+# PyTorch Playground
 
-This repository hosts various Pytorch toy code. Have fun!
+This repository hosts various PyTorch toy code. Have fun!
