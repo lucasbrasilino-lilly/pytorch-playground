@@ -30,9 +30,10 @@ def main(input_size = 10*2**10):
     tinymodel = TinyModel(input_size)
     print('The model:')
     print(tinymodel)
+    tinymodel = tinymodel.to('cuda:0')
 
-    trainset = torch.rand(10, input_size)
-    target = torch.rand(10)
+    trainset = torch.rand(10, input_size).to('cuda:0')
+    target = torch.rand(10).to('cuda:0')
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(tinymodel.parameters(), lr=0.05)
 
@@ -52,7 +53,7 @@ def main(input_size = 10*2**10):
 
 if __name__ == '__main__':
     if torch.cuda.is_available():
-        main()
+        main(input_size=10*2**20)
     else:    
         print(f'No CUDA available. Bye!')
         
